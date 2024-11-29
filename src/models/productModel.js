@@ -8,4 +8,4 @@ const productScema = new Schema({
     stock: { type: Number, required: true, default: 0 },
 });
 
-export const productModel = mongoose.model('product', productScema)
+export const productModel = mongoose.model('Product', productScema)
