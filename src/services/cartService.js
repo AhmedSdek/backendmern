@@ -1,4 +1,5 @@
 import { cartModel } from "../models/cartModel.js"
+import { orderModel } from "../models/orderModel.js";
 import { productModel } from "../models/productModel.js";
 
 const creatCartforUser = async ({ userId }) => {
@@ -87,4 +88,38 @@ export const clearItemInCart = async ({ userId }) => {
     cart.totalAmount = 0;
     const updatedCart = await cart.save();
     return { data: updatedCart, statusCode: 200 }
+}
+
+export const checkout = async ({ userId, adress }) => {
+    if (!adress) {
+        return { data: "please add adress", statusCode: 400 }
+    }
+    const cart = await getActiveCartforUser({ userId });
+    const orderItems = []
+    //loop cartItems and creat order items
+    for (const item of cart.items) {
+        const product = await productModel.findById(item.product);
+        if (!product) {
+            return { data: "product not found", statusCode: 400 }
+        };
+        const orderItem = {
+            productTitle: product.title,
+            productImage: product.image,
+            unitPrice: item.unitPrice,
+            quantity: item.quantity
+        }
+        orderItems.push(orderItem);
+    }
+
+    const order = await orderModel({
+        orderItems: orderItems,
+        total: cart.totalAmount,
+        adress: adress,
+        userId: userId
+    });
+    await order.save();
+    //update cart status
+    cart.status = 'complited';
+    await cart.save();
+    return { data: order, statusCode: 200 }
 }

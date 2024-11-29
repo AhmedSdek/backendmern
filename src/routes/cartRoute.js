@@ -1,6 +1,6 @@
 import express from 'express';
 import validatejwt from '../middlwear/validatejwt.js';
-import { addItemToCart, clearItemInCart, deleteItemInCart, getActiveCartforUser, updateItemInCart } from '../services/cartService.js';
+import { addItemToCart, checkout, clearItemInCart, deleteItemInCart, getActiveCartforUser, updateItemInCart } from '../services/cartService.js';
 
 const router = express.Router();
 
@@ -64,6 +64,19 @@ router.delete('/',
         try {
             const userId = req.user._id;
             const response = await clearItemInCart({ userId });
+            res.status(response.statusCode).send(response.data);
+        } catch (err) {
+            console.log(err)
+        }
+    });
+
+router.post('/checkout',
+    validatejwt
+    , async (req, res) => {
+        try {
+            const userId = req.user._id;
+            const { adress } = req.body;
+            const response = await checkout({ userId, adress });
             res.status(response.statusCode).send(response.data);
         } catch (err) {
             console.log(err)
