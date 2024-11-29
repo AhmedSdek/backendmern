@@ -7,7 +7,8 @@ router.get('/', async (req, res) => {
         const products = await productModel.find();
         res.status(200).send(products)
     } catch (err) {
-        res.status(500).send('something wrong')
+        console.log(err)
+        res.status(500).send('something wrong');
     }
 });
 router.post('/', async (req, res) => {
@@ -17,6 +18,7 @@ router.post('/', async (req, res) => {
         newProduct.save();
         res.status(201).send(newProduct)
     } catch (err) {
+        console.log(err)
         res.status(500).send(err)
     }
 })

@@ -12,10 +12,10 @@ router.get('/',
             const cart = await getActiveCartforUser({ userId });
             res.send(cart)
         } catch (err) {
-            console.log(err)
+            console.log(err);
+            res.status(500).send(err)
         }
     });
-
 
 router.post('/',
     validatejwt
@@ -27,9 +27,9 @@ router.post('/',
             res.status(response.statusCode).send(response.data);
         } catch (err) {
             console.log(err)
+            res.status(500).send(err)
         }
     });
-
 
 router.put('/',
     validatejwt
@@ -41,9 +41,9 @@ router.put('/',
             res.status(response.statusCode).send(response.data);
         } catch (err) {
             console.log(err)
+            res.status(500).send(err)
         }
     });
-
 
 router.delete('/:productId',
     validatejwt
@@ -55,6 +55,7 @@ router.delete('/:productId',
             res.status(response.statusCode).send(response.data);
         } catch (err) {
             console.log(err)
+            res.status(500).send(err)
         }
     });
 
@@ -67,6 +68,7 @@ router.delete('/',
             res.status(response.statusCode).send(response.data);
         } catch (err) {
             console.log(err)
+            res.status(500).send(err)
         }
     });
 
@@ -80,6 +82,7 @@ router.post('/checkout',
             res.status(response.statusCode).send(response.data);
         } catch (err) {
             console.log(err)
+            res.status(500).send(err)
         }
     });
 export default router

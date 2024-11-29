@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from "express";
 import mongoose from "mongoose";
 import userRouter from "./routes/userRoute.js";
@@ -8,7 +9,7 @@ const app = express();
 const port = 3001;
 app.use(express.json())
 mongoose
-    .connect("mongodb://127.0.0.1:27017/e-commerce")
+    .connect(process.env.DATABASE_URL)
     .then(() => console.log("Connected!"))
     .catch((err) => console.log(err));
 
