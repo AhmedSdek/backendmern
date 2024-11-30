@@ -10,7 +10,7 @@ const orderItemScema = new Schema({
 const orderScema = new Schema({
     orderItems: [orderItemScema],
     total: { type: Number, required: true },
-    adress: { type: String, required: true },
+    address: { type: String, required: true },
     userId: { type: Schema.Types.ObjectId, ref: 'user', required: true, default: 0 },
 });
 

@@ -1,6 +1,6 @@
 import express from 'express';
 import validatejwt from '../middlwear/validatejwt.js';
-import { addItemToCart, checkout, clearItemInCart, deleteItemInCart, getActiveCartforUser, updateItemInCart } from '../services/cartService.js';
+import { addItemToCart, checkout, clearCart, deleteItemInCart, getActiveCartforUser, updateItemInCart } from '../services/cartService.js';
 
 const router = express.Router();
 
@@ -9,7 +9,7 @@ router.get('/',
     , async (req, res) => {
         try {
             const userId = req.user._id;
-            const cart = await getActiveCartforUser({ userId });
+            const cart = await getActiveCartforUser({ userId, productDetails: true });
             res.send(cart)
         } catch (err) {
             console.log(err);
@@ -17,7 +17,7 @@ router.get('/',
         }
     });
 
-router.post('/',
+router.post('/items',
     validatejwt
     , async (req, res) => {
         try {
@@ -31,7 +31,7 @@ router.post('/',
         }
     });
 
-router.put('/',
+router.put('/items',
     validatejwt
     , async (req, res) => {
         try {
@@ -45,7 +45,7 @@ router.put('/',
         }
     });
 
-router.delete('/:productId',
+router.delete('/items/:productId',
     validatejwt
     , async (req, res) => {
         try {
@@ -64,7 +64,7 @@ router.delete('/',
     , async (req, res) => {
         try {
             const userId = req.user._id;
-            const response = await clearItemInCart({ userId });
+            const response = await clearCart({ userId });
             res.status(response.statusCode).send(response.data);
         } catch (err) {
             console.log(err)
@@ -77,8 +77,8 @@ router.post('/checkout',
     , async (req, res) => {
         try {
             const userId = req.user._id;
-            const { adress } = req.body;
-            const response = await checkout({ userId, adress });
+            const { address } = req.body;
+            const response = await checkout({ userId, address });
             res.status(response.statusCode).send(response.data);
         } catch (err) {
             console.log(err)

@@ -1,4 +1,4 @@
-import { cartModel } from "../models/cartModel.js"
+import { cartModel } from "../models/cartModel.js";
 import { orderModel } from "../models/orderModel.js";
 import { productModel } from "../models/productModel.js";
 
@@ -8,13 +8,20 @@ const creatCartforUser = async ({ userId }) => {
     return cart;
 };
 
-export const getActiveCartforUser = async ({ userId }) => {
-    let cart = await cartModel.findOne({ userId, status: "active" });
+export const getActiveCartforUser = async ({ userId, productDetails }) => {
+    let cart;
+    if (productDetails) {
+        cart = await cartModel
+            .findOne({ userId, status: "active" })
+            .populate("items.product");
+    } else {
+        cart = await cartModel.findOne({ userId, status: "active" });
+    }
     if (!cart) {
         try {
             cart = await creatCartforUser({ userId });
         } catch (err) {
-            console.log(err)
+            console.log(err);
         }
     }
     return cart;
@@ -22,104 +29,122 @@ export const getActiveCartforUser = async ({ userId }) => {
 
 export const addItemToCart = async ({ userId, productId, quantity }) => {
     const cart = await getActiveCartforUser({ userId });
-    const existInCArt = cart.items.find((p) => p.product.toString() === productId);
+    const existInCArt = cart.items.find(
+        (p) => p.product.toString() === productId
+    );
     if (existInCArt) {
-        return { data: "Item already exist in cart", statusCode: 200 }
-    };
+        return { data: "Item already exist in cart", statusCode: 200 };
+    }
     const product = await productModel.findById(productId);
     if (!product) {
-        return { data: "product not found", statusCode: 400 }
-    };
+        return { data: "product not found", statusCode: 400 };
+    }
     if (product.stock < quantity) {
-        return { data: "low stock", statusCode: 400 }
+        return { data: "low stock", statusCode: 400 };
     }
     cart.items.push({ product: productId, unitPrice: product.price, quantity });
     cart.totalAmount += product.price * quantity;
-    const updatetCart = await cart.save();
-    return { data: updatetCart, statusCode: 200 }
-}
+    await cart.save();
+    return {
+        data: await getActiveCartforUser({ userId, productDetails: true }),
+        statusCode: 200,
+    };
+};
 
 export const updateItemInCart = async ({ userId, productId, quantity }) => {
     const cart = await getActiveCartforUser({ userId });
-    const existInCArt = cart.items.find((p) => p.product.toString() === productId);
+    const existInCArt = cart.items.find(
+        (p) => p.product.toString() === productId
+    );
     if (!existInCArt) {
-        return { data: "item does not exist in cart", statusCode: 400 }
+        return { data: "item does not exist in cart", statusCode: 400 };
     }
     const product = await productModel.findById(productId);
     if (!product) {
-        return { data: "product not found", statusCode: 400 }
-    };
-    if (product.stock < quantity) {
-        return { data: "low stock", statusCode: 400 }
+        return { data: "product not found", statusCode: 400 };
     }
-    const othercartitem = cart.items.filter((p) => p.product.toString() !== productId);
+    if (product.stock < quantity) {
+        return { data: "low stock", statusCode: 400 };
+    }
+    const othercartitem = cart.items.filter(
+        (p) => p.product.toString() !== productId
+    );
     let total = othercartitem.reduce((sum, product) => {
         sum += product.quantity * product.unitPrice;
-        return sum
+        return sum;
     }, 0);
     existInCArt.quantity = quantity;
     total += existInCArt.quantity * existInCArt.unitPrice;
     cart.totalAmount = total;
-    const updatedCart = await cart.save();
-    return { data: updatedCart, statusCode: 200 }
-}
-
+    await cart.save();
+    return {
+        data: await getActiveCartforUser({ userId, productDetails: true }),
+        statusCode: 200,
+    };
+};
 
 export const deleteItemInCart = async ({ userId, productId }) => {
     const cart = await getActiveCartforUser({ userId });
-    const existInCArt = cart.items.find((p) => p.product.toString() === productId);
+    const existInCArt = cart.items.find(
+        (p) => p.product.toString() === productId
+    );
     if (!existInCArt) {
-        return { data: "item does not exist in cart", statusCode: 400 }
+        return { data: "item does not exist in cart", statusCode: 400 };
     }
-    const othercartitem = cart.items.filter((p) => p.product.toString() !== productId);
+    const othercartitem = cart.items.filter(
+        (p) => p.product.toString() !== productId
+    );
     const total = othercartitem.reduce((sum, product) => {
         sum += product.quantity * product.unitPrice;
-        return sum
+        return sum;
     }, 0);
     cart.items = othercartitem;
     cart.totalAmount = total;
-    const updatedCart = await cart.save();
-    return { data: updatedCart, statusCode: 200 }
-}
+    await cart.save();
+    return {
+        data: await getActiveCartforUser({ userId, productDetails: true }),
+        statusCode: 200,
+    };
+};
 
-export const clearItemInCart = async ({ userId }) => {
+export const clearCart = async ({ userId }) => {
     const cart = await getActiveCartforUser({ userId });
     cart.items = [];
     cart.totalAmount = 0;
-    const updatedCart = await cart.save();
-    return { data: updatedCart, statusCode: 200 }
-}
+    await cart.save();
+    return { data: await getActiveCartforUser({ userId, productDetails: true }), statusCode: 200 };
+};
 
-export const checkout = async ({ userId, adress }) => {
-    if (!adress) {
-        return { data: "please add adress", statusCode: 400 }
+export const checkout = async ({ userId, address }) => {
+    if (!address) {
+        return { data: "please add adress", statusCode: 400 };
     }
     const cart = await getActiveCartforUser({ userId });
-    const orderItems = []
+    const orderItems = [];
     //loop cartItems and creat order items
     for (const item of cart.items) {
         const product = await productModel.findById(item.product);
         if (!product) {
-            return { data: "product not found", statusCode: 400 }
-        };
+            return { data: "product not found", statusCode: 400 };
+        }
         const orderItem = {
             productTitle: product.title,
             productImage: product.image,
             unitPrice: item.unitPrice,
-            quantity: item.quantity
-        }
+            quantity: item.quantity,
+        };
         orderItems.push(orderItem);
     }
 
     const order = await orderModel({
         orderItems: orderItems,
         total: cart.totalAmount,
-        adress: adress,
-        userId: userId
+        address: address,
+        userId: userId,
     });
     await order.save();
     //update cart status
-    cart.status = 'complited';
+    cart.status = "complited";
     await cart.save();
-    return { data: order, statusCode: 200 }
-}
+    return { data: order, statusCode: 200 };
+};

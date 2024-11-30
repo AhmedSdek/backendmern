@@ -1,6 +1,7 @@
 import { userModel } from "../models/userModel.js"
 import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
+import { orderModel } from "../models/orderModel.js";
 export const Register = async ({ firstName, lastName, email, password }) => {
     try {
         const findUser = await userModel.findOne({ email: email });
@@ -36,6 +37,15 @@ export const Login = async ({ email, password }) => {
     }
 }
 
+export const getMyOrders = async ({ userId }) => {
+    try {
+        return { data: await orderModel.findOne({ userId }), statusCode: 200 }
+    } catch (err) {
+        console.log(err)
+        return { data: 'wrong Login', statusCode: 500 }
+        // res.status(500).send(err)
+    }
+}
 const generateJWT = (data) => {
     return jwt.sign(data, process.env.JWT_SECRET || '')
 }
