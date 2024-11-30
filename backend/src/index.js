@@ -6,7 +6,7 @@ import productRouter from "./routes/productRoute.js";
 import cartRouter from "./routes/cartRoute.js";
 import cors from 'cors'
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001;
 app.use(express.json())
 app.use(cors())
 mongoose
@@ -14,10 +14,13 @@ mongoose
     .then(() => console.log("Connected!"))
     .catch((err) => console.log(err));
 
-app.use('/user', userRouter);
-app.use('/product', productRouter);
-app.use('/cart', cartRouter);
+// app.use('/user', userRouter);
+// app.use('/product', productRouter);
+// app.use('/cart', cartRouter);
 
+app.get('/', (req, res) => {
+    res.send("welcom")
+})
 app.listen(port, () => {
     console.log(`Server is runing at http://localhost:${port}`);
 });

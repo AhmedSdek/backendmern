@@ -4,10 +4,14 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/index.js",
+    "watch": "nodemon --ext *"
   },
   "keywords": [],
   "author": "",
+  "engines": {
+    "node": "20.9.0"
+  },
   "license": "ISC",
   "description": "",
   "dependencies": {
